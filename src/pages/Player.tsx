@@ -3,8 +3,21 @@ import { Header } from '../components/Header';
 
 import { MessageCircle } from 'lucide-react';
 import { Module } from '../components/Module';
+import { useAppSelector } from '../store';
+import { useCurrentLesson } from '../store/slices/player';
+import { useEffect } from 'react';
 
 export function Player() {
+	const modules = useAppSelector((state) => {
+		return state.player.course.modules;
+	});
+
+	const { currentLesson } = useCurrentLesson();
+
+	useEffect(() => {
+		document.title = `Assistindo: ${currentLesson.title}`;
+	}, [currentLesson]);
+
 	return (
 		<div className='h-screen bg-zinc-950 text-zinc-50 flex justify-center items-center'>
 			<div className='flex w-[1100px] flex-col gap-6'>
@@ -23,11 +36,16 @@ export function Player() {
 					</div>
 
 					<aside className='absolute w-80 top-0 bottom-0 right-0 divide-y-2 divide-zinc-900 overflow-y-auto border-l border-zinc-800 bg-zinc-900 scrollbar-thin scrollbar-track-zinc-950 scrollbar-thumb-zinc-900'>
-						<Module moduleIndex={0} title='Desvendando o Redux' lessonsAmount={3} />
-						<Module moduleIndex={1} title='Desvendando o Redux' lessonsAmount={3} />
-						<Module moduleIndex={2} title='Desvendando o Redux' lessonsAmount={3} />
-						<Module moduleIndex={3} title='Desvendando o Redux' lessonsAmount={3} />
-						<Module moduleIndex={4} title='Desvendando o Redux' lessonsAmount={3} />
+						{modules.map((module, index) => {
+							return (
+								<Module
+									key={module.id}
+									moduleIndex={index}
+									title={module.title}
+									lessonsAmount={module.lessons.length}
+								/>
+							);
+						})}
 					</aside>
 				</main>
 			</div>

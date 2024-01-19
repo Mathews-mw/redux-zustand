@@ -3,6 +3,9 @@ import * as Collapsible from '@radix-ui/react-collapsible';
 import { Lesson } from './Lesson';
 
 import { ChevronDown } from 'lucide-react';
+import { useAppSelector } from '../store';
+import { useDispatch } from 'react-redux';
+import { play } from '../store/slices/player';
 
 interface IModuleProps {
 	moduleIndex: number;
@@ -11,8 +14,20 @@ interface IModuleProps {
 }
 
 export function Module({ moduleIndex, title, lessonsAmount }: IModuleProps) {
+	const dispatch = useDispatch();
+
+	const { currentModuleIndex, currentLessonIndex } = useAppSelector((state) => {
+		const { currentModuleIndex, currentLessonIndex } = state.player;
+
+		return { currentModuleIndex, currentLessonIndex };
+	});
+
+	const lessons = useAppSelector((state) => {
+		return state.player.course.modules[moduleIndex].lessons;
+	});
+
 	return (
-		<Collapsible.Root className='group'>
+		<Collapsible.Root className='group' defaultOpen={moduleIndex === 0}>
 			<Collapsible.Trigger className='flex w-full items-center gap-3 bg-zinc-800 p-4 hover:bg-zinc-800/60'>
 				<div className='flex h-10 w-10 rounded-full items-center justify-center bg-zinc-950 text-xs'>
 					{moduleIndex + 1}
@@ -28,9 +43,20 @@ export function Module({ moduleIndex, title, lessonsAmount }: IModuleProps) {
 
 			<Collapsible.Content>
 				<nav className='relative flex flex-col gap-4 p-6'>
-					<Lesson title='Fundamentos do Redux' duration='09:15' />
-					<Lesson title='Entendo o Store' duration='07:25' />
-					<Lesson title='Reducers e Dispatchers' duration='12:43' />
+					{lessons.map((lesson, lessonIndex) => {
+						const isCurrent =
+							currentModuleIndex === moduleIndex && currentLessonIndex === lessonIndex;
+
+						return (
+							<Lesson
+								key={lesson.id}
+								title={lesson.title}
+								duration={lesson.duration}
+								onPlay={() => dispatch(play([moduleIndex, lessonIndex]))}
+								isCurrent={isCurrent}
+							/>
+						);
+					})}
 				</nav>
 			</Collapsible.Content>
 		</Collapsible.Root>
